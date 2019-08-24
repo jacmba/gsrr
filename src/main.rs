@@ -1,4 +1,6 @@
 use structopt::StructOpt;
+use failure::ResultExt;
+use exitfailure::ExitFailure;
 
 #[derive(StructOpt)]
 struct Cli {
@@ -8,13 +10,14 @@ struct Cli {
   path: std::path::PathBuf,
 }
 
-fn main() {
+fn main() -> Result<(), ExitFailure> {
     let args: Cli = Cli::from_args();
     let content = std::fs::read_to_string(&args.path)
-      .expect("Could not read file");
+      .with_context(|_| format!("Error reading {:?}", &args.path))?;
     for line in content.lines() {
       if line.contains(&args.pattern) {
         println!("{}", line);
       }
     }
+    Ok(())
 }
